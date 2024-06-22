@@ -1,47 +1,68 @@
 import Image from "next/image";
+import React from "react";
 import Discussion from "./discussion";
+
+// TODO: HARD-CODE 
+const posts = [
+  {
+    id: 1,
+    title: 'CS & EECS Drop-in Advising Only Available Thurs PM this Week!',
+    author: 'Lydia Raya',
+    role: 'FACULTY/STAFF',
+    time: '5 days ago',
+    content: `Due to the Juneteenth Holiday, virtual drop-in advising for CS & EECS students will only be available Thursday, 6/20, 1:30-3:30PM this week. Back to regular summer hours next week!`,
+    link: 'https://berkeley.zoom.us/j/98554504308',
+  },
+  {
+    id: 2,
+    title: '[SU24] Private Tutor',
+    author: 'Carol',
+    role: 'FACULTY/STAFF',
+    time: '1 week ago',
+    content: 'Looking for a private tutor for summer sessions.',
+  },
+  {
+    id: 3,
+    title: '[FA24] ASE (UCS/TA, UGSI) Application Deadline',
+    author: 'Faculty',
+    role: 'FACULTY/STAFF',
+    time: '2 months ago',
+    content: 'Reminder: The application deadline for Fall 2024 ASE positions is approaching. Submit your applications soon!',
+  },
+];
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <main className="flex min-h-screen flex-col items-center justify-between p-4 bg-gray-100">
+      <div className="flex w-full max-w-6xl bg-white rounded shadow">
+        {/* sidebar */}
+        <div className="w-1/4 p-4 border-r">
+          <div className="flex flex-col gap-4">
+            {posts.map(post => (
+              <div key={post.id} className="p-2 border-b">
+                <h3 className="font-bold text-blue-600">{post.title}</h3>
+                <p className="text-sm text-gray-500">{post.author} • {post.time}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* main */}
+        <div className="w-3/4 p-4">
+          {posts.map(post => (
+            <div key={post.id} className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-700">{post.title}</h2>
+              <p className="text-gray-500">{post.author} • {post.role} • {post.time}</p>
+              <p className="mt-4 text-gray-600">{post.content}</p>
+              {post.link && (
+                <a href={post.link} className="text-blue-500" target="_blank" rel="noopener noreferrer">
+                  {post.link}
+                </a>
+              )}
+            </div>
+          ))}
         </div>
       </div>
-
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-      <Discussion/>
-      <Discussion/>
-      <Discussion/>
     </main>
   );
 }
