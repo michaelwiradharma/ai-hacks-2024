@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "build:css": "tailwindcss build styles.css -o output.css"
   },
   "dependencies": {
     "next": "14.2.4",
@@ -24,10 +25,5 @@
     "typescript": "^5"
   },
   "main": "index.js",
-  "license": "MIT",
-
-  "scripts": {
-  "build:css": "tailwindcss build styles.css -o output.css"
-}
-
+  "license": "MIT"
 }
