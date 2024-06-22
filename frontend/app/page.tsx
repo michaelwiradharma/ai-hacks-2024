@@ -1,6 +1,6 @@
 import Image from "next/image";
 import React from "react";
-import Discussion from "./discussion";
+import Discussion from "./components/discussion";
 
 // TODO: HARD-CODE 
 const posts = [
@@ -20,6 +20,7 @@ const posts = [
     role: 'FACULTY/STAFF',
     time: '1 week ago',
     content: 'Looking for a private tutor for summer sessions.',
+    replies: ['ididididid']
   },
   {
     id: 3,
@@ -33,15 +34,15 @@ const posts = [
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-4 bg-gray-100">
-      <div className="flex w-full max-w-6xl bg-white rounded shadow">
+    <main className="flex min-h-screen flex-col items-center justify-between p-4 bg-gray">
+      <div className="flex w-full min-h-screen bg-gray rounded shadow">
         {/* sidebar */}
         <div className="w-1/4 p-4 border-r">
           <div className="flex flex-col gap-4">
             {posts.map(post => (
               <div key={post.id} className="p-2 border-b">
                 <h3 className="font-bold text-blue-600">{post.title}</h3>
-                <p className="text-sm text-gray-500">{post.author} • {post.time}</p>
+                <p className="text-sm text-white-500">{post.author} • {post.time}</p>
               </div>
             ))}
           </div>
@@ -49,18 +50,9 @@ export default function Home() {
 
         {/* main */}
         <div className="w-3/4 p-4">
-          {posts.map(post => (
-            <div key={post.id} className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-700">{post.title}</h2>
-              <p className="text-gray-500">{post.author} • {post.role} • {post.time}</p>
-              <p className="mt-4 text-gray-600">{post.content}</p>
-              {post.link && (
-                <a href={post.link} className="text-blue-500" target="_blank" rel="noopener noreferrer">
-                  {post.link}
-                </a>
-              )}
-            </div>
-          ))}
+          {posts.map((post) => {
+            return <Discussion post={post}/>
+          })}
         </div>
       </div>
     </main>
