@@ -58,9 +58,7 @@ def sort_replies():
     return sorted_replies
 
 # sentiment analysis
-def get_sentiment_of_post(post):
-    sorted_replies = sort_replies()
-
+def get_sentiment_of_post(post, sorted_replies):
     bedrock = AWSBedrock()
     data_format = "{topic_n: confusion_score_n, ...}"
 
@@ -68,5 +66,17 @@ def get_sentiment_of_post(post):
     response = bedrock.get_reply(prompt)
     return response
 
+# create a report (sentiment + summary) for instructor
+# input: takes in a dictionary of topic: replies and topic: sentiment
+def get_post_report(sorted_replies, sentiment):
+    bedrock = AWSBedrock()
+    data_format = "{topic_n: summary, ...}"
+
+    prompt = f"Given these topics: {topics} and its correlated replies: {sorted_replies} and confusion score: {sentiment}, write a summary about each topic. Follow this format: {data_format}."
+    response = bedrock.get_reply(prompt)
+    return response
+
 # # === main ===
-print(get_sentiment_of_post(post))
+sorted_replies = sort_replies()
+sentiment = get_sentiment_of_post(post, sorted_replies)
+print(get_post_report(sorted_replies, sentiment))
