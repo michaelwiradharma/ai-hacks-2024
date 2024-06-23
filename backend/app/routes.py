@@ -14,6 +14,7 @@ def get_userid(user):
         query = text('SELECT * FROM users WHERE username = :username LIMIT 1');
         rows = connection.execute(query, {'username': user})
     result = [{column: value for column, value in row._mapping.items()} for row in rows]
+    return result
 
 
 @main.route('/add_user', methods=['POST'])
@@ -48,11 +49,20 @@ def add_reply(post_id):
 @main.route('/posts/<int:post_id>/reply', methods=["GET"])
 def get_replies(post_id):
     with db.engine.connect() as connection:
-        query = text('SELECT * FROM replies, users WHERE post_id = :post_id AND replies.user_id = users.id')
+        query = text('SELECT replies.id, username, user_type, replies.created_at, content, parent_reply_id FROM replies, users WHERE post_id = :post_id AND replies.user_id = users.id ORDER BY replies.created_at ASC')
         rows = connection.execute(query, {'post_id': post_id})
     result = [{column: value for column, value in row._mapping.items()} for row in rows]
-    print(result)
-    return jsonify(result), 201
+    hashmap = {res['id']: res for res in result}
+    organized_result = []
+    for res in result:
+        if res['parent_reply_id'] == None:
+            organized_result.append(res)
+        else:
+            parent = res['parent_reply_id']
+            if 'replies' not in hashmap[parent].keys():
+                hashmap[parent]['replies'] = []
+            hashmap[parent]['replies'].append(res)
+    return jsonify(organized_result), 201
 
 
 # posts POST

@@ -1,5 +1,5 @@
 // frontend/app/components/discussion.tsx
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { DiscussionProps, Reply } from "../types/database";
 import { getReplies, addReply } from "../api/posts";
 
@@ -9,30 +9,35 @@ export default function Discussion({ post }: DiscussionProps) {
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [nestedReplyContent, setNestedReplyContent] = useState<string>("");
 
+  const [triggerFetch, setTriggerFetch] = useState<boolean>(false);
+
+  const mapReplies = (replies: any) => {
+    return replies.map((reply: any) => ({
+      id: reply.id,
+      author: reply.username,
+      role: reply.user_type,
+      time: reply.created_at,
+      content: reply.content,
+      parentReplyId: reply.parent_reply_id,
+      replies: reply.replies ? mapReplies(reply.replies) : [], // Recursively map nested replies
+    }));
+  };
+
   useEffect(() => {
     const fetchReplies = async () => {
       const data = await getReplies(post.id);
       if (data) {
-        setAllReplies([
-          ...allReplies,
-          ...data.map((reply: any) => ({
-            id: reply.id,
-            author: reply.username,
-            role: reply.user_type,
-            time: reply.created_at,
-            content: reply.content,
-            parentReplyId: reply.parent_reply_id,
-          })),
-        ]);
+        setAllReplies(mapReplies(data));
       }
     };
-    fetchReplies(); // Fetch replies when post prop changes
-  }, [post]);
+    fetchReplies();
+    setTriggerFetch(false);
+  }, [post, triggerFetch]);
 
   const handleReplySubmit = async () => {
     const newReply = await addReply(post.id, replyContent);
     if (newReply) {
-      setAllReplies([...allReplies, newReply]);
+      setTriggerFetch(true);
       setReplyContent("");
     }
   };
@@ -40,20 +45,14 @@ export default function Discussion({ post }: DiscussionProps) {
   const handleNestedReplySubmit = async (parentId: number) => {
     const newReply = await addReply(post.id, nestedReplyContent, parentId);
     if (newReply) {
-      const updatedReplies = allReplies.map((reply) => {
-        if (reply.id === parentId) {
-          return { ...reply, replies: [...reply.replies, newReply] };
-        }
-        return reply;
-      });
-      setAllReplies(updatedReplies);
+      setTriggerFetch(true);
       setNestedReplyContent("");
       setReplyingTo(null);
     }
   };
 
   const renderReplies = (replies: Reply[], level: number = 0) => {
-    return replies.map((reply) => (
+    return replies.map((reply, id) => (
       <div
         key={reply.id}
         className={`ml-${level * 4} mt-4 pl-4 border-l border-gray-700`}
