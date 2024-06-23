@@ -5,6 +5,7 @@ import json
 class AWSBedrock:
     def __init__(self):
         self.br = boto3.client(service_name='bedrock-runtime')
+        self.anthr = boto3.client(service_name='anthropic.claude-v2')
 
     def get_reply(self, input_text):
         body = json.dumps({
@@ -17,19 +18,32 @@ class AWSBedrock:
         )
 
         response_body = json.loads(response.get("body").read())
-        print(f"Input token count: {response_body['inputTextTokenCount']}")
-        for result in response_body['results']:
-            print(f"Token count: {result['tokenCount']}")
-            print(f"Output text: {result['outputText']}")
-            print(f"Completion reason: {result['completionReason']}")
+        # print(f"Output text: {response_body['results'][0]['outputText']}")
         
         return response_body['results'][0]['outputText']
+    
+    def get_reply_anthr(self, input_text):
+        {
+            "prompt": "\n\nHuman:<prompt>\n\nAssistant:",
+            "temperature": float,
+            "top_p": float,
+            "top_k": int,
+            "max_tokens_to_sample": int,
+            "stop_sequences": [string]
+        }
+        
+        body = json.dumps({
+            'inputText': input_text
+        })
 
+        response = self.br.invoke_model(
+            modelId='amazon.titan-tg1-large', 
+            body=body
+        )
 
-# create model
-aws = AWSBedrock()
-aws.get_reply("I am excited to submit my homework on Friday")
-
-# Make the model invocation call
+        response_body = json.loads(response.get("body").read())
+        # print(f"Output text: {response_body['results'][0]['outputText']}")
+        
+        return response_body['results'][0]['outputText']
 
 
