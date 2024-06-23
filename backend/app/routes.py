@@ -1,10 +1,10 @@
 # backend/app/routes.api
 from flask import Blueprint, request, jsonify
 from flask_cors import CORS, cross_origin
-from .models import User, Post, Reply
+from .models import User, Post, Reply, Topic
 from .database import db
 from sqlalchemy.sql import text
-from .helper import get_reply_topic, sort_replies, get_sentiment_of_post, get_post_report  # Import helper functions
+from .helper import get_reply_topic, sort_replies, get_sentiment_of_post, get_post_report, extract_topics  # Import helper functions
 
 main = Blueprint('main', __name__)
 CORS(main)
@@ -53,7 +53,6 @@ def get_replies_db(post_id):
         query = text('SELECT replies.id, username, user_type, replies.created_at, content, parent_reply_id FROM replies, users WHERE post_id = :post_id AND replies.user_id = users.id ORDER BY replies.created_at ASC')
         rows = connection.execute(query, {'post_id': post_id})
     return [{column: value for column, value in row._mapping.items()} for row in rows]
-
 
 
 # replies GET
@@ -119,10 +118,69 @@ def get_posts():
 def hello():
     return "hello, worlds"
 
+# extract topics
+@main.route('/extract_topics', methods=["POST"])
+def extract_topics():
+    data = request.json
+    post_id = data.get("id")
+
+    # Fetching the post content
+    with db.engine.connect() as connection:
+        post_query = text('SELECT content FROM posts WHERE id = :post_id')
+        post_row = connection.execute(post_query, {'post_id': post_id}).fetchone()
+    post_content = post_row['content']
+    print(post_content)
+
+    # Fetching the replies
+    with db.engine.connect() as connection:
+        replies_query = text('SELECT content FROM replies WHERE post_id = :post_id')
+        reply_rows = connection.execute(replies_query, {'post_id': post_id})
+    replies = [{column: value for column, value in row._mapping.items()} for row in reply_rows]
+
+    topics = extract_topics(post_content, replies)
+    print(topics)
+
+    # Insert topics into the database if they don't already exist
+    with db.engine.connect() as connection:
+        for topic in topics:
+            topic_check_query = text('SELECT topic_id FROM topics WHERE name = :name')
+            topic_check_result = connection.execute(topic_check_query, {'name': topic}).fetchone()
+            if not topic_check_result:
+                # Insert the new topic of does not exist
+                new_topic = Topic(name=topic)
+                db.session.add(new_topic)
+                db.session.commit()
+
+    return jsonify(topics), 1000
+
 # Get the sentiment of a post
 # Input: post_id
 @main.route('/get_sentiment', methods=["POST"])
 def get_sentiment():
+    data = request.json 
+    post_content = data.get("content")
+    post_id = data.get("id")
+    if not post_id:
+        return jsonify({'error': 'No post_id'}), 400
+
+    with db.engine.connect() as connection:
+        replies = text('SELECT content FROM replies WHERE post_id = :post_id')
+        rows = connection.execute(replies, {'post_id': post_id})
+    replies = [{column: value for column, value in row._mapping.items()} for row in rows]
+
+    with db.engine.connect() as connection:
+        topics = text('SELECT name FROM topics')
+        rows = connection.execute(topics)
+    topics = [{column: value for column, value in row._mapping.items()} for row in rows]
+    topics = [topic['name'] for topic in topics]
+
+    sorted_replies = sort_replies(replies, topics)
+    result = get_sentiment_of_post(post_content, sorted_replies, topics)
+    return jsonify(result), 200
+
+
+@main.route('/get_report', methods=["POST"])
+def get_report():
     data = request.json
     post_content = data.get("content")
     post_id = data.get("id")
@@ -139,28 +197,36 @@ def get_sentiment():
         rows = connection.execute(topics)
     topics = [{column: value for column, value in row._mapping.items()} for row in rows]
     topics = [topic['name'] for topic in topics]
+
     sorted_replies = sort_replies(replies, topics)
-    result = get_sentiment_of_post(post_content, sorted_replies, topics)
+    sentiment = get_sentiment_of_post(post_content, sorted_replies, topics)
+    summary = get_post_report(sorted_replies, topics)
+
+    result = {topic: {'summary': summary[topic], 'sentiment': sentiment[topic]} for topic in topics}
     return jsonify(result), 200
 
-
-@main.route('/get_report', methods=["POST"])
-def get_report():
-    return
-
 @main.route('/get_topics/<int:reply_id>/reply', methods=["GET"])
-def get_topics(reply_id):
+def get_reply_topic(reply_id):
+    data = request.json
+    post_content = data.get("content")
+
     with db.engine.connect() as connection:
-        query = text('SELECT * FROM posts, users WHERE reply_id = :reply_id')
-        rows = connection.execute(query)
-    response = get_reply_topic(rows)
-    if not response:
-        return jsonify({'error': 'Failed to get topic from Bedrock'}), 500
+        replies = text('SELECT content FROM replies WHERE id = :reply_id')
+        rows = connection.execute(replies)
+    replies = [{column: value for column, value in row._mapping.items()} for row in rows]
+
+    with db.engine.connect() as connection:
+        topics = text('SELECT name FROM topics')
+        rows = connection.execute(topics)
+    topics = [{column: value for column, value in row._mapping.items()} for row in rows]
+    topics = [topic['name'] for topic in topics]
+
+    response = get_reply_topic(replies[0], topics)
+
     return jsonify({'topic': response}), 200
 
 @main.route('/get_sorted_replies/<int:reply_id>', methods=["GET"])
 def get_sorted_replies(reply_id):
     replies = get_replies_db(reply_id)
-
     
     return

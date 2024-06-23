@@ -48,7 +48,9 @@ VALUES
 -- Insert data into posts table
 INSERT INTO posts (title, user_id, content, created_at) 
 VALUES 
-('[Final] Summer 2022', 1, 'You can find the past exams here.\nWhen posting questions, please reference the exam type and question number in bold at the beginning in this format: Exam Type–Question Number\nFor example: MT1–7d, or Final–3aiii', '2024-06-02'),
+('[Final] Summer 2022', 1, 'You can find the past exams here.
+When posting questions, please reference the exam type and question number in bold at the beginning in this format: Exam Type–Question Number
+For example: MT1–7d, or Final–3aiii', '2024-06-02'),
 ('[SU24] Private Tutor', 1, 'Looking for a private tutor for summer sessions.', '2024-06-06'),
 ('[FA24] ASE (UCS/TA, UGSI) Application Deadline', 1, 'Reminder: The application deadline for Fall 2024 ASE positions is approaching. Submit your applications soon!', '2022-06-19'),
 ('HW 01 Released', 2, 'HW 01 is released and will be due Wednesday, June 26 at 11:59 pm.', '2024-06-20');
@@ -69,3 +71,8 @@ VALUES
 ('boolean logic', 'Topics covering boolean logic including short circuiting.'),
 ('while loops', 'Discussion on while loops and their applications.'),
 ('conditionals', 'Topics related to if-else conditions and their usage.');
+
+
+update posts set content = 'You can find the past exams here.
+When posting questions, please reference the exam type and question number in bold at the beginning in this format: Exam Type–Question Number
+For example: MT1–7d, or Final–3aiii' where id = 1;
