@@ -29,7 +29,6 @@ def submit_topics():
 def get_reply_topic(reply):
     bedrock = AWSBedrock()
     prompt = f"Given the following reply, {reply['content']} which topic among these topics: {topics} does it most correlate to? ONLY ANSWER WITH THE TOPIC NAMES AND NO ADDITIONAL WORDS, ONLY ANSWER WITH TOPIC NAMES ALREADY GIVEN. "
-    # print(prompt)
     response = bedrock.get_reply(prompt)
     # print(response)
 
@@ -64,10 +63,9 @@ def get_sentiment_of_post(post):
 
     bedrock = AWSBedrock()
     data_format = "{topic1: confusion_score1}"
-
     ratings = {topic: "" for topic in topics} 
     for topic in sorted:
-        prompt = f"Given the topic {topic} and its correlated replies {sorted[topic]}, give a sentiment rating from 0 to 10 for how confused they are. Return me only 1 thing that matches exactly like my data format: {data_format}. An example is like this: " + "{boolean logic: 5}"
+        prompt = f"Given the topic {topic} and its correlated replies {sorted[topic]}, give a sentiment rating from 0 to 10 for how confused they are. Return only an integer."
         response = bedrock.get_reply(prompt)
         ratings[topic] = response
     return ratings
