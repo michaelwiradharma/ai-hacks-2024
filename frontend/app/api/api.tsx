@@ -1,10 +1,11 @@
-// frontend/app/api/posts/tsx
+// frontend/app/api/posts.tsx
 // API FUNCTIONS
 
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://8819-2607-f140-400-2d-419d-296f-b83-9711.ngrok-free.app",
+  //   baseURL: "https://8819-2607-f140-400-2d-419d-296f-b83-9711.ngrok-free.app",
+  baseURL: "http://localhost:5500",
   headers: {
     "ngrok-skip-browser-warning": "true",
   },
@@ -44,12 +45,34 @@ export async function addReply(
   user?: string
 ) {
   try {
-    console.log(parentReplyId);
     const commentor = user ? user : "matthewkao";
     const response = await api.post(`/posts/${postId}/reply`, {
       content,
       parent_reply_id: parentReplyId,
       user: commentor,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error adding reply:", error);
+  }
+}
+
+export async function getSentiment(postId: number, content: string) {
+  try {
+    const response = await api.post(`/get_sentiment`, {
+      content,
+      post_id: postId,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error adding reply:", error);
+  }
+}
+
+export async function getReport(postId: number, content: string) {
+  try {
+    const response = await api.post(`/get_post_report`, {
+      post_id: postId,
     });
     return response.data;
   } catch (error) {

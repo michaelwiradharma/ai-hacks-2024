@@ -50,9 +50,10 @@ def sort_replies(replies, topics):
 # sentiment analysis
 def get_sentiment_of_post(post, sorted_replies, topics):
     bedrock = AWSBedrock()
-    data_format = "{topic_n: confusion_score_n, ...}"
+    
 
-    prompt = f"Given these topics: {topics} and its correlated replies: {sorted_replies}, give a confusion_score ranging from 1-10. Return only an integer" + " Follow this format: {data_format}. An example is like this:" + "\n" + "{boolean logic: 5, short circuiting: 3, ...}"
+    prompt = f"Given these topics: {topics}, and its correlated replies: {sorted_replies}, give a confusion_score ranging from 1-10. Return only an integer" + " Follow this format:" + "{topic_n: confusion_score_n, ...}. A good example is ONLY returning:" + "{boolean logic: 5, short circuiting: 3, ...}"
+    print(prompt)
     response = bedrock.get_reply(prompt)
     return response
 

@@ -2,7 +2,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Discussion from "./components/discussion";
-import { getPosts } from "./api/posts";
+import { getPosts } from "./api/api";
 import { Post } from "./types/database";
 import { timeAgo } from "./utils/timeAgo";
 import HeatMap from "./components/heatmap";

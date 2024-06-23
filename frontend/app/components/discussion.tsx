@@ -1,9 +1,19 @@
 // frontend/app/components/discussion.tsx
 import React, { useCallback, useEffect, useState } from "react";
 import { DiscussionProps, Reply } from "../types/database";
-import { getReplies, addReply } from "../api/posts";
+import { getReplies, addReply, getReport } from "../api/api";
 import { timeAgo } from "../utils/timeAgo";
 import HeatMap from "./heatmap";
+
+// export async function getServerSideProps() {
+//   // const data = await getReport()
+// }
+
+function capitalize(str : string) {
+  return str.replace(/\w\S*/g, (txt : string) => {
+    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+  });
+}
 
 export default function Discussion({ post }: DiscussionProps) {
   const [replyContent, setReplyContent] = useState<string>("");
@@ -12,6 +22,9 @@ export default function Discussion({ post }: DiscussionProps) {
   const [nestedReplyContent, setNestedReplyContent] = useState<string>("");
 
   const [triggerFetch, setTriggerFetch] = useState<boolean>(false);
+  const [showImprovementDirections, setShowImprovementDirections] = useState<boolean>(false);
+
+  
 
   const mapReplies = (replies: any) => {
     return replies.map((reply: any) => ({
@@ -96,6 +109,29 @@ export default function Discussion({ post }: DiscussionProps) {
     ));
   };
 
+  type Report = {
+    topic: string;
+    advice: string;
+  }
+
+  // [{'topic': 'booleans', 'advice': 'fasoidfauospdfuapoidsfupoasdifas'}, {'topic': 'booleans', 'advice': 'fasoidfauospdfuapoidsfupoasdifas'}]'
+
+  const [report, setReport] = useState<Report[]>();
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getReport(post.id, post.content);
+      const jsonparsed = JSON.parse(data.replaceAll("'", '"'));
+      const keys = Object.keys(jsonparsed);
+      setReport([
+        ...keys.map((key: string) => ({
+          topic: key,
+          advice: jsonparsed[key]
+        }))
+      ])
+    };
+    fetchData();
+  }, []);
+
   return (
     <div key={post.id} className="mb-8">
       <h2 className="text-2xl font-bold text-gray-100">{post.title}</h2>
@@ -116,7 +152,25 @@ export default function Discussion({ post }: DiscussionProps) {
         </a>
       )}
       <hr className="my-6 border-gray-700" />
+
       <HeatMap post={post} />
+      <button
+        className="text-lg font-semibold text-blue-500 mb-4 hover:text-[#5795fa]"
+        onClick={() => setShowImprovementDirections(!showImprovementDirections)}
+      >
+        Directions for Student Improvement
+      </button>
+      {showImprovementDirections && (
+        <div className="mb-6 text-gray-300 whitespace-pre-line">
+          {report.map((item, index) => (
+            <div key={index} className="mb-4">
+              <h4 className="font-semibold">{capitalize(item.topic)}</h4>
+              <p>{item.advice}</p>
+            </div>  
+          ))}
+        </div>
+      )}
+
       <hr className="my-6 border-gray-700" />
       <div className="mt-6">
         <h3 className="text-lg font-semibold text-gray-100">Replies</h3>

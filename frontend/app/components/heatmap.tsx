@@ -2,15 +2,19 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { Post } from "../types/database";
+import { getSentiment } from "../api/api";
 
-const Heatmap = ({ data, width }: any) => {
+type HeatMapProps = {
+  post: Post;
+};
+
+function Heatmap({ data, width }: any) {
   const ref = useRef();
 
   let totalScore = 0;
   for (const num of Object.values(data)) {
     totalScore += Number(num);
   }
-  
 
   useEffect(() => {
     if (data && ref.current) {
@@ -27,16 +31,16 @@ const Heatmap = ({ data, width }: any) => {
           "#cc0000",
           "#990000",
           "#660000",
-          "#330000"
+          "#330000",
         ]);
 
       const svg = d3.select(ref.current);
-      svg.selectAll("*").remove(); 
+      svg.selectAll("*").remove();
 
-      
       const containerWidth = width;
+      const barHeight = 20;
 
-      let cumulativeWidth = 0
+      let cumulativeWidth = 0;
       const rect = svg
         .selectAll("rect")
         .data(Object.entries(data))
@@ -47,12 +51,12 @@ const Heatmap = ({ data, width }: any) => {
           cumulativeWidth += (d[1] / totalScore) * containerWidth;
           return x;
         })
-        .attr("y", 20)
+        .attr("y", barHeight)
         .attr("width", (d) => (d[1] / totalScore) * containerWidth)
-        .attr("height", 20)
+        .attr("height", barHeight)
         .attr("fill", (d) => colorScale(d[1]));
 
-      cumulativeWidth = 0; 
+      cumulativeWidth = 0;
 
       svg
         .selectAll("text")
@@ -60,42 +64,55 @@ const Heatmap = ({ data, width }: any) => {
         .enter()
         .append("text")
         .attr("x", (d) => {
-          const x = cumulativeWidth + ((d[1] / totalScore) * containerWidth) / 2;
+          const x =
+            cumulativeWidth + ((d[1] / totalScore) * containerWidth) / 2;
           cumulativeWidth += (d[1] / totalScore) * containerWidth;
           return x;
         })
         .attr("y", 15)
         .attr("text-anchor", "middle")
-        // .attr("transform", "rotate(-45)")
         .style("fill", "white")
         .style("font-size", "12px")
         .text((d) => `${d[0]}: ${d[1]}`);
     }
-  }, [data]);
+  }, [data, width]);
 
   return <svg className="w-full" ref={ref}></svg>;
-};
+}
 
-const data = {
-  "boolean logic": 1,
-  "while loops": 10,
-  "conditionals": 3,
-  "for loops" : 9,
-  "environment diagram" : 7
-};
+export default function HeatMap({ post }: HeatMapProps) {
+  const divref = useRef();
 
-const sortedData = Object.fromEntries(
-  Object.entries(data).sort(([, a], [, b]) => a - b)
-);
+  const [sentiment, setSentiment] = useState<object>(null);
+  const [width, setWidth] = useState<number>(700);
 
-export default function HeatMap(post: Post) {
-  const ref = useRef();
+  useEffect(() => {
+    const fetchData = async () => {
+      const result = await getSentiment(post.id, post.content);
+      const jsonparsed = JSON.parse(result.replaceAll("'", '"'));
+      const sortedData = Object.fromEntries(
+        Object.entries(jsonparsed).sort(([, a], [, b]) => a - b)
+      );
+      setSentiment(sortedData);
+    };
+    fetchData();
+  }, [post.id, post.content]);
+
+
+  useEffect(() => {
+    if (divref && divref.current && divref.current.clientWidth) {
+      setWidth(divref.current.clientWidth);
+    }
+  }, [divref]);
+
   return (
-    <div ref={ref}>
-      <h3 className="text-lg font-semibold text-gray-100">
+    <div>
+      <h3 ref={divref} className="text-lg font-semibold text-gray-100">
         Confusion Score Heat Map
       </h3>
-      <Heatmap data={sortedData} width={ref.current?.clientWidth} class="w-full"/>
+      {sentiment && (
+        <Heatmap data={sentiment} width={width} className="w-full" />
+      )}
     </div>
   );
 }

@@ -122,6 +122,7 @@ def get_sentiment():
         replies = text('SELECT content FROM replies WHERE post_id = :post_id')
         rows = connection.execute(replies, {'post_id': post_id})
     replies = [{column: value for column, value in row._mapping.items()} for row in rows]
+    print(post_id)
     print(replies)
 
     with db.engine.connect() as connection:
@@ -154,6 +155,7 @@ def get_report():
     sorted_replies = sort_replies(replies, topics)
     sentiment = get_sentiment_of_post(post_id, sorted_replies, topics)
     result = get_post_report(sorted_replies, sentiment, topics)
+    print(result)
     return jsonify(result), 200
 
 
