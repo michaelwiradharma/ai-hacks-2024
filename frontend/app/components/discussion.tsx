@@ -2,6 +2,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { DiscussionProps, Reply } from "../types/database";
 import { getReplies, addReply } from "../api/posts";
+import { timeAgo } from "../utils/timeAgo";
 
 export default function Discussion({ post }: DiscussionProps) {
   const [replyContent, setReplyContent] = useState<string>("");
@@ -58,7 +59,7 @@ export default function Discussion({ post }: DiscussionProps) {
         className={`ml-${level * 4} mt-4 pl-4 border-l border-gray-700`}
       >
         <p className="text-gray-500">
-          {reply.author} • {reply.time}
+          {reply.author} • {timeAgo.format(new Date(reply.time))}
         </p>
         <p className="whitespace-pre-line text-gray-300">{reply.content}</p>
         <button
@@ -97,7 +98,7 @@ export default function Discussion({ post }: DiscussionProps) {
       <h2 className="text-2xl font-bold text-gray-100">{post.title}</h2>
       <div className="mt-2 mb-6">
         <p className="text-gray-500">
-          {post.author} • {post.time}
+          {post.author} • {timeAgo.format(new Date(post.time))}
         </p>
       </div>
       <p className="text-gray-300 whitespace-pre-line">{post.content}</p>

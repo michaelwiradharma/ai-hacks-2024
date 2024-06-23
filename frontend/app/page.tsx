@@ -1,10 +1,11 @@
 // frontend/app/page.tsx
 "use client";
-
 import React, { useEffect, useState } from "react";
 import Discussion from "./components/discussion";
 import { getPosts } from "./api/posts";
 import { Post } from "./types/database";
+import { timeAgo } from "./utils/timeAgo";
+
 
 export default function Home() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -23,7 +24,6 @@ export default function Home() {
           role: post.user_type,
         })),
       ]);
-
     };
     fetchData();
   }, []);
@@ -45,7 +45,7 @@ export default function Home() {
               >
                 <h3 className="font-bold text-blue-600">{post.title}</h3>
                 <p className="text-sm text-gray-400">
-                  {post.author} • {post.time}
+                  {post.author} • {timeAgo.format(new Date(post.time))}
                 </p>
               </div>
             ))}
