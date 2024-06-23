@@ -14,7 +14,6 @@ export default function Home() {
     const fetchData = async () => {
       let data = await getPosts();
       setPosts([
-        ...posts,
         ...data.map((post: any) => ({
           id: post.id,
           content: post.content,
@@ -24,6 +23,7 @@ export default function Home() {
           role: post.user_type,
         })),
       ]);
+
     };
     fetchData();
   }, []);
@@ -36,7 +36,10 @@ export default function Home() {
           <div className="flex flex-col gap-4">
             {posts.map((post: Post) => (
               <div
-                onClick={() => setCurrId(post.id)}
+                onClick={() => {
+                  setCurrId(post.id);
+                  console.log(post.id);
+                }}
                 key={post.id}
                 className="p-2 border-b border-gray-700 cursor-pointer hover:bg-[#666666] hover:rounded-md"
               >

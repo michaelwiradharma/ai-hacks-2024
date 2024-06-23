@@ -97,7 +97,7 @@ def add_post(post_id):
 @main.route('/posts', methods=["GET"])
 def get_posts():
     with db.engine.connect() as connection:
-        query = text('SELECT * FROM posts, users WHERE posts.user_id = users.id')
+        query = text('SELECT posts.id, content, title, posts.created_at, username, user_type FROM posts, users WHERE posts.user_id = users.id')
         rows = connection.execute(query)
     result = [{column: value for column, value in row._mapping.items()} for row in rows]
     response = jsonify(result)
