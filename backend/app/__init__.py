@@ -1,12 +1,10 @@
 from flask import Flask
-from flask_cors import CORS
 from .routes import main as main_blueprint
 from .database import db
 
 
 def create_app():
     app = Flask(__name__)
-    cors = CORS(app)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost/mydatabase'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 

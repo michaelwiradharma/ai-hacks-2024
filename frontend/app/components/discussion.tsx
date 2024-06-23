@@ -1,90 +1,76 @@
+// frontend/app/components/discussion.tsx
 import React, { useEffect, useState } from "react";
-
-interface Post {
-  id: number;
-  title: string;
-  author: string;
-  role: string;
-  time: string;
-  content: string;
-  link?: string;
-  replies: Reply[];
-}
-
-interface Reply {
-  id: number;
-  author: string;
-  role?: string;
-  time: string;
-  content: string;
-  parentReplyId: number | null;
-  replies: Reply[];
-}
-
-interface DiscussionProps {
-  post: Post;
-}
+import { DiscussionProps, Reply } from "../types/database";
+import { getReplies, addReply } from "../api/posts";
 
 export default function Discussion({ post }: DiscussionProps) {
   const [replyContent, setReplyContent] = useState<string>("");
-  const [allReplies, setAllReplies] = useState<Reply[]>(post.replies);
+  const [allReplies, setAllReplies] = useState<Reply[]>([]);
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [nestedReplyContent, setNestedReplyContent] = useState<string>("");
 
   useEffect(() => {
-    setAllReplies(post.replies);
+    const fetchReplies = async () => {
+      const data = await getReplies(post.id);
+      if (data) {
+        setAllReplies([
+          ...allReplies,
+          ...data.map((reply: any) => ({
+            id: reply.id,
+            author: reply.username,
+            role: reply.user_type,
+            time: reply.created_at,
+            content: reply.content,
+            parentReplyId: reply.parent_reply_id,
+          })),
+        ]);
+      }
+    };
+    fetchReplies(); // Fetch replies when post prop changes
   }, [post]);
 
-  const handleReplySubmit = () => {
-    const newReply: Reply = {
-      id: allReplies.length,
-      author: "Current User", // TODO: Replace with actual current user
-      time: "Just now",
-      content: replyContent,
-      parentReplyId: null,
-      replies: [],
-    };
-
-    setAllReplies([...allReplies, newReply]);
-    setReplyContent("");
+  const handleReplySubmit = async () => {
+    const newReply = await addReply(post.id, replyContent);
+    if (newReply) {
+      setAllReplies([...allReplies, newReply]);
+      setReplyContent("");
+    }
   };
 
-  const handleNestedReplySubmit = (parentId: number) => {
-    const newReply: Reply = {
-      id: allReplies.length,
-      author: "Current User", // TODO: Replace with actual current user
-      time: "Just now",
-      content: nestedReplyContent,
-      parentReplyId: parentId,
-      replies: [],
-    };
-
-    const updatedReplies = allReplies.map(reply => {
-      if (reply.id === parentId) {
-        return { ...reply, replies: [...reply.replies, newReply] };
-      }
-      return reply;
-    });
-
-    setAllReplies(updatedReplies);
-    setNestedReplyContent("");
-    setReplyingTo(null);
+  const handleNestedReplySubmit = async (parentId: number) => {
+    const newReply = await addReply(post.id, nestedReplyContent, parentId);
+    if (newReply) {
+      const updatedReplies = allReplies.map((reply) => {
+        if (reply.id === parentId) {
+          return { ...reply, replies: [...reply.replies, newReply] };
+        }
+        return reply;
+      });
+      setAllReplies(updatedReplies);
+      setNestedReplyContent("");
+      setReplyingTo(null);
+    }
   };
 
   const renderReplies = (replies: Reply[], level: number = 0) => {
     return replies.map((reply) => (
-      <div key={reply.id} className={`ml-${level * 4} mt-4 pl-4 border-l border-gray-700`}>
+      <div
+        key={reply.id}
+        className={`ml-${level * 4} mt-4 pl-4 border-l border-gray-700`}
+      >
         <p className="text-gray-500">
-          {reply.author} {reply.role && `• ${reply.role}`} • {reply.time}
+          {reply.author} • {reply.time}
         </p>
-        <p className="text-gray-300">{reply.content}</p>
+        <p className="whitespace-pre-line text-gray-300">{reply.content}</p>
         <button
           className="text-blue-500 text-sm"
           onClick={() => setReplyingTo(reply.id)}
         >
           Reply
         </button>
-        {reply.replies.length > 0 && renderReplies(reply.replies, level + 1)}
+        {reply.replies &&
+          reply.replies.length > 0 &&
+          renderReplies(reply.replies, level + 1)}
         {replyingTo === reply.id && (
           <div className="mt-4">
             <textarea
@@ -112,7 +98,7 @@ export default function Discussion({ post }: DiscussionProps) {
       <h2 className="text-2xl font-bold text-gray-100">{post.title}</h2>
       <div className="mt-2 mb-6">
         <p className="text-gray-500">
-          {post.author} • {post.role} • {post.time}
+          {post.author} • {post.time}
         </p>
       </div>
       <p className="text-gray-300 whitespace-pre-line">{post.content}</p>

@@ -1,8 +1,8 @@
--- init.sql
+-- backend/postgres/init.sql
 
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
-    user_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     username VARCHAR(255) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
@@ -12,8 +12,8 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Posts table
 CREATE TABLE IF NOT EXISTS posts (
-    post_id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -22,10 +22,10 @@ CREATE TABLE IF NOT EXISTS posts (
 
 -- Replies table
 CREATE TABLE IF NOT EXISTS replies (
-    reply_id SERIAL PRIMARY KEY,
-    post_id INT REFERENCES posts(post_id) ON DELETE CASCADE,
-    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
-    parent_reply_id INT REFERENCES replies(reply_id) ON DELETE CASCADE, -- allows nested replies
+    id SERIAL PRIMARY KEY,
+    post_id INT REFERENCES posts(id) ON DELETE CASCADE,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    parent_reply_id INT REFERENCES replies(id) ON DELETE CASCADE, -- allows nested replies
     content TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -39,10 +39,15 @@ CREATE TABLE IF NOT EXISTS topics (
 );
 
 
-INSERT INTO posts (title, content, created_at) 
+INSERT INTO posts (title, user_id, content, created_at) 
 VALUES 
-('[Final] Summer 2022', 'You can find the past exams here.\n
-              When posting questions, please reference the exam type and question number in bold at the beginning in this format: Exam Type–Question Number\n
-              For example: MT1–7d, or Final–3aiii', '06/02/24'),
-('[SU24] Private Tutor', 'Looking for a private tutor for summer sessions.', '06/06/24'),
-('[FA24] ASE (UCS/TA, UGSI) Application Deadline', 'Reminder: The application deadline for Fall 2024 ASE positions is approaching. Submit your applications soon!', '06/19/22');
+('[Final] Summer 2022', 1, 'You can find the past exams here.\nWhen posting questions, please reference the exam type and question number in bold at the beginning in this format: Exam Type–Question Number\nFor example: MT1–7d, or Final–3aiii', '2024-06-02'),
+('[SU24] Private Tutor', 1, 'Looking for a private tutor for summer sessions.', '2024-06-06'),
+('[FA24] ASE (UCS/TA, UGSI) Application Deadline', 1, 'Reminder: The application deadline for Fall 2024 ASE positions is approaching. Submit your applications soon!', '2022-06-19');
+
+
+INSERT INTO users (username, email, password_hash, user_type)
+VALUES
+('peyrinkao', 'peyrinkao@berkeley.edu', 'abc', 'instructor'),
+('matthewkao', 'matthewkao@berkeley.edu', 'abc', 'student');
+
