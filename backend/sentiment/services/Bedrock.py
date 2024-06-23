@@ -23,7 +23,7 @@ class AWSBedrock:
             print(f"Output text: {result['outputText']}")
             print(f"Completion reason: {result['completionReason']}")
         
-        return response_body['results']['outputText']
+        return response_body['results'][0]['outputText']
 
 
 # create model
