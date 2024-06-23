@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { DiscussionProps, Reply } from "../types/database";
 import { getReplies, addReply } from "../api/posts";
 import { timeAgo } from "../utils/timeAgo";
-
+import HeatMap from "./heatmap";
 
 export default function Discussion({ post }: DiscussionProps) {
   const [replyContent, setReplyContent] = useState<string>("");
@@ -59,35 +59,37 @@ export default function Discussion({ post }: DiscussionProps) {
         key={reply.id}
         className={`ml-${level * 4} mt-4 pl-4 border-l border-gray-700`}
       >
-        <p className="text-gray-500">
-          {reply.author} • {timeAgo.format(new Date(reply.time))}
-        </p>
-        <p className="whitespace-pre-line text-gray-300">{reply.content}</p>
-        <button
-          className="text-blue-500 text-sm"
-          onClick={() => setReplyingTo(reply.id)}
-        >
-          Reply
-        </button>
+        <div className="flex flex-col">
+          <div className="flex justify-between items-start">
+            <p className="text-sm text-slate-500 flex-1">
+              {reply.author} • {timeAgo.format(new Date(reply.time))}
+            </p>
+            <button
+              className="text-blue-500 text-sm"
+              onClick={() => setReplyingTo(reply.id)}
+            >
+              Reply
+            </button>
+          </div>
+          <p className="whitespace-pre-line text-gray-300">{reply.content}</p>
+        </div>
         {reply.replies &&
           reply.replies.length > 0 &&
           renderReplies(reply.replies, level + 1)}
         {replyingTo === reply.id && (
-          <div className="mt-4">
+          <div className="flex flex-row mt-4 items-end">
             <textarea
               value={nestedReplyContent}
               onChange={(e) => setNestedReplyContent(e.target.value)}
-              className="w-full p-2 border rounded bg-gray-800 text-black"
+              className="w-full p-2 border rounded m-3 bg-gray-800 text-black"
               placeholder="Add a reply..."
             ></textarea>
-            <div className="flex justify-end mt-2">
-              <button
-                onClick={() => handleNestedReplySubmit(reply.id)}
-                className="p-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Post
-              </button>
-            </div>
+            <button
+              onClick={() => handleNestedReplySubmit(reply.id)}
+              className="p-2 w-[150px] h-[50px] bg-blue-600 text-white m-3 rounded hover:bg-blue-700"
+            >
+              Post
+            </button>
           </div>
         )}
       </div>
@@ -114,6 +116,8 @@ export default function Discussion({ post }: DiscussionProps) {
         </a>
       )}
       <hr className="my-6 border-gray-700" />
+      <HeatMap post={post} />
+      <hr className="my-6 border-gray-700" />
       <div className="mt-6">
         <h3 className="text-lg font-semibold text-gray-100">Replies</h3>
         {renderReplies(allReplies)}
@@ -121,13 +125,13 @@ export default function Discussion({ post }: DiscussionProps) {
           <textarea
             value={replyContent}
             onChange={(e) => setReplyContent(e.target.value)}
-            className="w-full p-2 border rounded bg-gray-800 text-black"
+            className="w-full p-2 border rounded-md bg-gray-800 text-black"
             placeholder="Add a reply..."
-          ></textarea>
+          />
           <div className="flex justify-end mt-2">
             <button
               onClick={handleReplySubmit}
-              className="p-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="w-[200px] p-2 bg-blue-600 text-white rounded hover:bg-blue-700"
             >
               Post
             </button>
