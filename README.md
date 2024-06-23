@@ -13,7 +13,7 @@ docker setup:
 
 to run:
 1. ` . .venv/bin/activate`
-2. `flask run --debug`
+2. `python3 app.py`
 3. `docker run --name postgres_db_container -d -p 5432:5432 postgres_db`
 
 to shell into docker:

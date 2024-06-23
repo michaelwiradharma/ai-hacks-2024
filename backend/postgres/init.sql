@@ -37,3 +37,12 @@ CREATE TABLE IF NOT EXISTS topics (
     name VARCHAR(255) NOT NULL UNIQUE,
     description TEXT
 );
+
+
+INSERT INTO posts (title, content, created_at) 
+VALUES 
+('[Final] Summer 2022', 'You can find the past exams here.\n
+              When posting questions, please reference the exam type and question number in bold at the beginning in this format: Exam Type–Question Number\n
+              For example: MT1–7d, or Final–3aiii', '06/02/24'),
+('[SU24] Private Tutor', 'Looking for a private tutor for summer sessions.', '06/06/24'),
+('[FA24] ASE (UCS/TA, UGSI) Application Deadline', 'Reminder: The application deadline for Fall 2024 ASE positions is approaching. Submit your applications soon!', '06/19/22');
