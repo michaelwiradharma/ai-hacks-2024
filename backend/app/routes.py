@@ -46,6 +46,16 @@ def add_reply(post_id):
     db.session.commit()
     return jsonify({'message': 'Reply added successfully', 'reply_id': reply.id}), 201
 
+
+# returns all rows from `replies`` in db
+def get_replies_db(post_id):
+    with db.engine.connect() as connection:
+        query = text('SELECT replies.id, username, user_type, replies.created_at, content, parent_reply_id FROM replies, users WHERE post_id = :post_id AND replies.user_id = users.id ORDER BY replies.created_at ASC')
+        rows = connection.execute(query, {'post_id': post_id})
+    return [{column: value for column, value in row._mapping.items()} for row in rows]
+
+
+
 # replies GET
 @main.route('/posts/<int:post_id>/reply', methods=["GET"])
 def get_replies(post_id):
@@ -114,8 +124,8 @@ def hello():
 @main.route('/get_sentiment', methods=["POST"])
 def get_sentiment():
     data = request.json
-    post_content = data.get("post")
-    post_id = data.get("post_id")
+    post_content = data.get("content")
+    post_id = data.get("id")
     if not post_id:
         return jsonify({'error': 'No post_id'}), 400
 
@@ -123,7 +133,6 @@ def get_sentiment():
         replies = text('SELECT content FROM replies WHERE post_id = :post_id')
         rows = connection.execute(replies, {'post_id': post_id})
     replies = [{column: value for column, value in row._mapping.items()} for row in rows]
-    print(replies)
 
     with db.engine.connect() as connection:
         topics = text('SELECT name FROM topics')
@@ -149,7 +158,9 @@ def get_topics(reply_id):
         return jsonify({'error': 'Failed to get topic from Bedrock'}), 500
     return jsonify({'topic': response}), 200
 
-@main.route('/get_sorted_replies', methods=["GET"])
-def get_sorted_replies():
+@main.route('/get_sorted_replies/<int:reply_id>', methods=["GET"])
+def get_sorted_replies(reply_id):
+    replies = get_replies_db(reply_id)
 
+    
     return

@@ -3,3 +3,4 @@ Flask_SQLAlchemy
 flask_cors
 boto3
 psycopg2-binary
+python-dotenv

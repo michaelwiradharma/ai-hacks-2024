@@ -1,11 +1,15 @@
 # Frontend
-to start: `yarn dev`
+setup:
+1. `yarn`
+
+to start: 
+1. `yarn dev`
 then for local: `ngrok http --domain=trusty-mistakenly-mudfish.ngrok-free.app 3000`
 
 # Backend
 setup: 
 1. `python3 -m venv venv` macOS // `py -3 -m venv .venv` Windows
-2. ` . .venv/bin/activate` macOS // `.venv\Scripts\activate` Windows
+2. `. .venv/bin/activate` macOS // `.venv\Scripts\activate` Windows
 3. `pip install -r requirements.txt`
 
 docker setup:

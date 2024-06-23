@@ -1,3 +1,4 @@
+from .constants import *
 import boto3
 import json
 import logging
@@ -6,7 +7,10 @@ from botocore.exceptions import ClientError
 
 class AWSBedrock:
     def __init__(self):
-        self.br = boto3.client(service_name='bedrock-runtime')
+        self.br = boto3.client(service_name='bedrock-runtime', 
+                                region_name='us-east-1', 
+                                aws_access_key_id=AWS_ACCESS_KEY, 
+                                aws_secret_access_key=AWS_SECRET_KEY)
 
     def generate_message(self, model_id, system_prompt, messages, max_tokens):
         body = json.dumps({
