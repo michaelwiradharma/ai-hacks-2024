@@ -29,7 +29,7 @@ def submit_topics():
 def get_reply_topic(reply):
     bedrock = AWSBedrock()
     prompt = f"Given the following reply, {reply['content']} which topic among these topics: {topics} does it most correlate to? ONLY ANSWER WITH THE TOPIC NAMES AND NO ADDITIONAL WORDS, ONLY ANSWER WITH TOPIC NAMES ALREADY GIVEN. "
-    response = bedrock.get_reply(prompt)
+    response = bedrock.get_reply_anthr(prompt)
     # print(response)
 
     # from response, get the topic name closest to it (since response could be a sentence sometimes?)
@@ -66,14 +66,14 @@ def get_sentiment_of_post(post):
     ratings = {topic: "" for topic in topics} 
     for topic in sorted:
         prompt = f"Given the topic {topic} and its correlated replies {sorted[topic]}, give a sentiment rating from 0 to 10 for how confused they are. Return only an integer."
-        response = bedrock.get_reply(prompt)
+        response = bedrock.get_reply_anthr(prompt)
         ratings[topic] = response
     return ratings
 
 
 # # === main ===
 # for reply in replies:
-#     get_reply_topic(reply)
+#     print(str(reply) + ": " + str(get_reply_topic(reply)))
 
 # sorted = sort_replies()
 # print(sorted)
