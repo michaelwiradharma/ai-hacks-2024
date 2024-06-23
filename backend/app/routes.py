@@ -156,3 +156,26 @@ def get_report():
     result = get_post_report(sorted_replies, sentiment, topics)
     return jsonify(result), 200
 
+
+@main.route('/get_topics/<int:reply_id>/reply', methods=["GET"])
+def get_topics(reply_id):
+    print("/n/n")
+    print(reply_id)
+
+    with db.engine.connect() as connection:
+        topics = text('SELECT name FROM topics')
+        rows = connection.execute(topics)
+    topics = [{column: value for column, value in row._mapping.items()} for row in rows]
+    topics = [topic['name'] for topic in topics]
+    
+    with db.engine.connect() as connection:
+        query = text('SELECT * FROM replies WHERE id = :reply_id LIMIT 1');
+        rows = connection.execute(query, {'reply_id': reply_id})
+    replies = [{column: value for column, value in row._mapping.items()} for row in rows]
+    reply = replies[0]
+    result = get_reply_topic(reply, topics)
+    print(result)
+    if not result:
+        return jsonify({'error': 'Failed to get topic from Bedrock'}), 500
+    return jsonify({'topic': result}), 200
+
