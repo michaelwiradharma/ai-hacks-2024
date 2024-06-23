@@ -114,7 +114,6 @@ def hello():
 @main.route('/get_sentiment', methods=["POST"])
 def get_sentiment():
     data = request.json
-    post_content = data.get("post")
     post_id = data.get("post_id")
     if not post_id:
         return jsonify({'error': 'No post_id'}), 400
@@ -131,25 +130,29 @@ def get_sentiment():
     topics = [{column: value for column, value in row._mapping.items()} for row in rows]
     topics = [topic['name'] for topic in topics]
     sorted_replies = sort_replies(replies, topics)
-    result = get_sentiment_of_post(post_content, sorted_replies, topics)
+    result = get_sentiment_of_post(post_id, sorted_replies, topics)
     return jsonify(result), 200
 
 
-@main.route('/get_report', methods=["POST"])
+@main.route('/get_post_report', methods=["POST"])
 def get_report():
-    return
-
-@main.route('/get_topics/<int:reply_id>/reply', methods=["GET"])
-def get_topics(reply_id):
+    data = request.json
+    post_id = data.get("post_id")
+    if not post_id:
+        return jsonify({'error': 'No post_id'}), 400
+    
     with db.engine.connect() as connection:
-        query = text('SELECT * FROM posts, users WHERE reply_id = :reply_id')
-        rows = connection.execute(query)
-    response = get_reply_topic(rows)
-    if not response:
-        return jsonify({'error': 'Failed to get topic from Bedrock'}), 500
-    return jsonify({'topic': response}), 200
+        topics = text('SELECT name FROM topics')
+        rows = connection.execute(topics)
+    topics = [{column: value for column, value in row._mapping.items()} for row in rows]
+    topics = [topic['name'] for topic in topics]
 
-@main.route('/get_sorted_replies', methods=["GET"])
-def get_sorted_replies():
+    with db.engine.connect() as connection:
+        replies = text('SELECT content FROM replies WHERE post_id = :post_id')
+        rows = connection.execute(replies, {'post_id': post_id})
+    replies = [{column: value for column, value in row._mapping.items()} for row in rows]
+    sorted_replies = sort_replies(replies, topics)
+    sentiment = get_sentiment_of_post(post_id, sorted_replies, topics)
+    result = get_post_report(sorted_replies, sentiment, topics)
+    return jsonify(result), 200
 
-    return
