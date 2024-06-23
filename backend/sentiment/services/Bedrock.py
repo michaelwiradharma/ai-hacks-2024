@@ -1,26 +1,37 @@
 import boto3
 import json
+import logging
 
-# Initialize the boto3 client for bedrock-runtime
+from botocore.exceptions import ClientError
+
 class AWSBedrock:
     def __init__(self):
         self.br = boto3.client(service_name='bedrock-runtime')
 
-    def get_reply(self, input_text):
+    def generate_message(self, model_id, system_prompt, messages, max_tokens):
         body = json.dumps({
-            'inputText': input_text
+            "anthropic_version": "bedrock-2023-05-31",
+            "max_tokens": max_tokens,
+            "system": system_prompt,
+            "messages": messages
         })
 
-        response = self.br.invoke_model(
-            modelId='amazon.titan-tg1-large', 
-            body=body
-        )
+        response = self.br.invoke_model(body=body, modelId=model_id)
+        response_body = json.loads(response.get('body').read())
+        return response_body
 
-        response_body = json.loads(response.get("body").read())
-        # print(f"Output text: {response_body['results'][0]['outputText']}")
-        
-        return response_body['results'][0]['outputText']
-    
+    def get_reply(self, input_text):
+        model_id = 'anthropic.claude-3-sonnet-20240229-v1:0'
+        system_prompt = "Please respond with text"
+        max_tokens = 1000
+
+        # Prompt with user turn only
+        user_message = {"role": "user", "content": input_text}
+        messages = [user_message]
+
+        response = self.generate_message(model_id, system_prompt, messages, max_tokens)
+        return response.get('content')[0].get('text')
+
     def get_reply_anthr(self, input_text):
         body = json.dumps({
             "prompt": "\n\nHuman: " + input_text + "\n\nAssistant:",
@@ -29,47 +40,12 @@ class AWSBedrock:
             "top_p": 0.9,
         })
 
-        modelId = 'anthropic.claude-v2'
+        model_id = 'anthropic.claude-3-5-sonnet-20240620-v1:0'
         accept = 'application/json'
-        contentType = 'application/json'
+        content_type = 'application/json'
 
-        response = self.br.invoke_model(body=body, modelId=modelId, accept=accept, contentType=contentType)
-
+        response = self.br.invoke_model(body=body, modelId=model_id, accept=accept, contentType=content_type)
         response_body = json.loads(response.get('body').read())
-
-        # text
-        #print(response_body.get('completion'))
-        
         return response_body.get('completion')
-
-
-# prompt = {
-#     "prompt": "\n\nHuman:<prompt>\n\nAssistant:",
-#     "temperature": float,
-#     "top_p": float,
-#     "top_k": int,
-#     "max_tokens_to_sample": int,
-#     "stop_sequences": [string]
-# }
-
-# THIS IS WORKING
-# brt = boto3.client(service_name='bedrock-runtime')
-# body = json.dumps({
-#     "prompt": "\n\nHuman: explain black holes to 8th graders\n\nAssistant:",
-#     "max_tokens_to_sample": 300,
-#     "temperature": 0.1,
-#     "top_p": 0.9,
-# })
-
-# modelId = 'anthropic.claude-sonnet-3.5'
-# accept = 'application/json'
-# contentType = 'application/json'
-
-# response = brt.invoke_model(body=body, modelId=modelId, accept=accept, contentType=contentType)
-
-# response_body = json.loads(response.get('body').read())
-
-# # text
-# print(response_body.get('completion'))
 
 

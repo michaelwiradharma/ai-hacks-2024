@@ -29,7 +29,7 @@ def submit_topics():
 def get_reply_topic(reply):
     bedrock = AWSBedrock()
     prompt = f"Given the following reply, {reply['content']} which topic among these topics: {topics} does it most correlate to? ONLY ANSWER WITH THE TOPIC NAMES AND NO ADDITIONAL WORDS, ONLY ANSWER WITH TOPIC NAMES ALREADY GIVEN. "
-    response = bedrock.get_reply_anthr(prompt)
+    response = bedrock.get_reply(prompt)
     # print(response)
 
     # from response, get the topic name closest to it (since response could be a sentence sometimes?)
@@ -59,23 +59,14 @@ def sort_replies():
 
 # sentiment analysis
 def get_sentiment_of_post(post):
-    sorted = sort_replies()
+    sorted_replies = sort_replies()
 
     bedrock = AWSBedrock()
-    data_format = "{topic1: confusion_score1}"
-    ratings = {topic: "" for topic in topics} 
-    for topic in sorted:
-        prompt = f"Given the topic {topic} and its correlated replies {sorted[topic]}, give a sentiment rating from 0 to 10 for how confused they are. Return only an integer."
-        response = bedrock.get_reply_anthr(prompt)
-        ratings[topic] = response
-    return ratings
+    data_format = "{topic_n: confusion_score_n, ...}"
 
+    prompt = f"Given these topics: {topics} and its correlated replies: {sorted_replies}, give a confusion_score ranging from 1-10. Return only an integer" + " Follow this format: {data_format}. An example is like this:" + "\n" + "{boolean logic: 5, short circuiting: 3, ...}"
+    response = bedrock.get_reply(prompt)
+    return response
 
 # # === main ===
-# for reply in replies:
-#     print(str(reply) + ": " + str(get_reply_topic(reply)))
-
-# sorted = sort_replies()
-# print(sorted)
-
 print(get_sentiment_of_post(post))
