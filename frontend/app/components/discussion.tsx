@@ -4,6 +4,7 @@ import { DiscussionProps, Reply } from "../types/database";
 import { getReplies, addReply } from "../api/posts";
 import { timeAgo } from "../utils/timeAgo";
 
+
 export default function Discussion({ post }: DiscussionProps) {
   const [replyContent, setReplyContent] = useState<string>("");
   const [allReplies, setAllReplies] = useState<Reply[]>([]);
