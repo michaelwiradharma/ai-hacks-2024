@@ -1,6 +1,7 @@
 from flask import Flask
 from .routes import main as main_blueprint
 from .database import db
+from .constants import *
 
 
 def create_app():
