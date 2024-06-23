@@ -2,7 +2,7 @@ import boto3
 import json
 
 # Initialize the boto3 client for bedrock-runtime
-class AWS_Bedrock:
+class AWSBedrock:
     def __init__(self):
         self.br = boto3.client(service_name='bedrock-runtime')
 
@@ -22,11 +22,12 @@ class AWS_Bedrock:
             print(f"Token count: {result['tokenCount']}")
             print(f"Output text: {result['outputText']}")
             print(f"Completion reason: {result['completionReason']}")
+        
         return response_body['results']['outputText']
 
 
 # create model
-aws = AWS_Bedrock()
+aws = AWSBedrock()
 aws.get_reply("I am excited to submit my homework on Friday")
 
 # Make the model invocation call
